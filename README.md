@@ -4,7 +4,7 @@
 
 <br />
 
-![Versión](https://img.shields.io/badge/versión-0.1.1%20beta-34e0a8?style=flat-square&labelColor=0a111f)
+![Versión](https://img.shields.io/badge/versión-0.1.1-34e0a8?style=flat-square&labelColor=0a111f)
 ![Plataforma](https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20Silicon-60a5fa?style=flat-square&labelColor=0a111f)
 ![Sin permisos](https://img.shields.io/badge/sin-permisos%20especiales-ffce3a?style=flat-square&labelColor=0a111f)
 ![Barra de menús](https://img.shields.io/badge/vive%20en-la%20barra%20de%20menús-fb923c?style=flat-square&labelColor=0a111f)
@@ -103,8 +103,8 @@ Atajos globales: **⌃⌥D** nueva estantería · **⌃⌥V** estantería con el
 
 ## ⚠️ Avisos
 
-- 🧪 **Es una beta.** El agitado ya está probado en uso real; si te cuesta que salte o salta sin querer, cambia
-  la sensibilidad en **Ajustes → Activación**.
+- 👋 Si te cuesta que salte la estantería o salta sin querer, cambia la sensibilidad del agitado en
+  **Ajustes → Activación**.
 - 📁 Lo que sueltas se guarda como **referencia** al archivo original (no se copia). El texto y las imágenes de
   webs sí se guardan como archivo propio.
 - 🍎 Solo para Macs con **Apple Silicon** y macOS 14 o superior.
@@ -179,7 +179,7 @@ switch apps, and drag it out wherever you like later. The interface is in Spanis
 
 ## ⚠️ Notices
 
-- 🧪 **Beta**: shake detection is tested in real use; tune the sensitivity in Settings if needed.
+- 👋 If the shelf is hard to trigger or pops up by accident, tune the shake sensitivity in Settings.
 - 🪶 **Light**: ~46 MB of RAM and 0 % CPU when idle, no memory leaks.
 - 🍎 **Apple Silicon** and macOS 14+ only for now.
 

@@ -1,6 +1,6 @@
 # Novedades
 
-## 0.1.1 · más ligera
+## 0.1.1 · primera versión estable, más ligera
 
 - Las miniaturas y los tamaños se olvidan cuando el archivo sale de todas las estanterías: la memoria ya no crece con el uso.
 - Miniaturas a la medida que se dibujan (casi 3 veces menos memoria cada una).
