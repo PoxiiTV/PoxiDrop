@@ -4,7 +4,7 @@
 
 <br />
 
-![Versión](https://img.shields.io/badge/versión-0.1.0%20beta-34e0a8?style=flat-square&labelColor=0a111f)
+![Versión](https://img.shields.io/badge/versión-0.1.1%20beta-34e0a8?style=flat-square&labelColor=0a111f)
 ![Plataforma](https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20Silicon-60a5fa?style=flat-square&labelColor=0a111f)
 ![Sin permisos](https://img.shields.io/badge/sin-permisos%20especiales-ffce3a?style=flat-square&labelColor=0a111f)
 ![Barra de menús](https://img.shields.io/badge/vive%20en-la%20barra%20de%20menús-fb923c?style=flat-square&labelColor=0a111f)
@@ -49,13 +49,13 @@ de vidrio nativo de macOS, más acciones rápidas sobre lo que sueltas, y todo e
   </tr>
 </table>
 
-<sub>Capturas generadas con datos de ejemplo. En tu Mac el fondo de la estantería es de vidrio y toma el color de lo que hay detrás.</sub>
+<sub>Capturas generadas con datos de ejemplo. En tu Mac el fondo de la estantería es de vidrio y toma el color de lo que hay detrás, y la selección usa tu color de acento.</sub>
 
 ## 📥 Descarga
 
 | Archivo | Para qué |
 |---|---|
-| **[`PoxiDrop-0.1.0.dmg`](https://github.com/PoxiiTV/PoxiDrop/releases/download/v0.1.0/PoxiDrop-0.1.0.dmg)** | **Instalador** (0,6 MB): ábrelo y arrastra PoxiDrop a Aplicaciones |
+| **[`PoxiDrop-0.1.1.dmg`](https://github.com/PoxiiTV/PoxiDrop/releases/download/v0.1.1/PoxiDrop-0.1.1.dmg)** | **Instalador** (0,6 MB): ábrelo y arrastra PoxiDrop a Aplicaciones |
 
 Todas las versiones y sus novedades, en [**Releases**](https://github.com/PoxiiTV/PoxiDrop/releases).
 
@@ -79,6 +79,19 @@ Todas las versiones y sus novedades, en [**Releases**](https://github.com/PoxiiT
 | 🔒 **Sin permisos raros** | No pide Accesibilidad ni grabación de pantalla. Nunca toca tus originales: los resultados se guardan aparte |
 | 💸 **Gratis** | Sin suscripción, sin anuncios y con el código aquí |
 
+## 🪶 Consumo
+
+Medido en un MacBook Pro M5:
+
+| | |
+|---|---|
+| En reposo | **~46 MB** de RAM, **0 %** de CPU y ningún despertar del procesador |
+| Con 50 estanterías abiertas y su detalle (100 ventanas) | ~118 MB |
+| Tras cerrarlas | vuelve a bajar: sin fugas en rondas repetidas |
+
+Solo vigila el ratón mientras mantienes pulsado el clic (20 veces por segundo, y 60 durante un arrastre para
+detectar bien el agitado). Las miniaturas son pequeñas y se olvidan cuando el archivo sale de las estanterías.
+
 ## 🚀 Cómo se usa
 
 1. Empieza a arrastrar cualquier cosa (un archivo del Finder, una imagen de una web, un texto…).
@@ -90,8 +103,8 @@ Atajos globales: **⌃⌥D** nueva estantería · **⌃⌥V** estantería con el
 
 ## ⚠️ Avisos
 
-- 🧪 **Es una beta.** La detección del agitado se ha probado con movimientos simulados; si te cuesta que salte
-  o salta sin querer, cambia la sensibilidad en **Ajustes → Activación**.
+- 🧪 **Es una beta.** El agitado ya está probado en uso real; si te cuesta que salte o salta sin querer, cambia
+  la sensibilidad en **Ajustes → Activación**.
 - 📁 Lo que sueltas se guarda como **referencia** al archivo original (no se copia). El texto y las imágenes de
   webs sí se guardan como archivo propio.
 - 🍎 Solo para Macs con **Apple Silicon** y macOS 14 o superior.
@@ -106,6 +119,7 @@ Basta con las Command Line Tools de Xcode (no hace falta Xcode completo).
 scripts/test.sh                          # tests de la lógica
 swift run PoxiDrop                       # la app en modo desarrollo
 .build/debug/PoxiDrop --snapshot capturas  # capturas con datos de ejemplo
+.build/release/PoxiDrop --medir            # memoria con 50 estanterías abriéndose y cerrándose
 scripts/make-app.sh                      # build/PoxiDrop.app
 scripts/make-dmg.sh                      # build/PoxiDrop-<versión>.dmg
 ```
@@ -150,7 +164,7 @@ switch apps, and drag it out wherever you like later. The interface is in Spanis
 
 | File | What for |
 |---|---|
-| **[`PoxiDrop-0.1.0.dmg`](https://github.com/PoxiiTV/PoxiDrop/releases/download/v0.1.0/PoxiDrop-0.1.0.dmg)** | **Installer** (0.6 MB): open it and drag PoxiDrop to Applications |
+| **[`PoxiDrop-0.1.1.dmg`](https://github.com/PoxiiTV/PoxiDrop/releases/download/v0.1.1/PoxiDrop-0.1.1.dmg)** | **Installer** (0.6 MB): open it and drag PoxiDrop to Applications |
 
 > ℹ️ The app is not signed by Apple yet, so macOS blocks it the first time. Open it, close the warning and go to
 > **System Settings → Privacy & Security → Open Anyway**. It lives in the menu bar, not in the Dock.
@@ -165,7 +179,8 @@ switch apps, and drag it out wherever you like later. The interface is in Spanis
 
 ## ⚠️ Notices
 
-- 🧪 **Beta**: shake detection was tested with simulated movements; tune the sensitivity in Settings.
+- 🧪 **Beta**: shake detection is tested in real use; tune the sensitivity in Settings if needed.
+- 🪶 **Light**: ~46 MB of RAM and 0 % CPU when idle, no memory leaks.
 - 🍎 **Apple Silicon** and macOS 14+ only for now.
 
 ## 📜 License

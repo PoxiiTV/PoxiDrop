@@ -14,7 +14,10 @@ final class ShelfWindowController: NSObject, NSWindowDelegate, ShelfDropTarget, 
     private(set) var detailPanel: ShelfPanel?
     private var palettePanel: ShelfPanel?
     private var collapseTask: Task<Void, Never>?
+    private var saveOriginTask: Task<Void, Never>?
     private var quickLookURLs: [URL] = []
+    /// Cuántos controladores siguen en memoria (para `--medir`).
+    static var alive = 0
 
     var store: ShelfStore { manager.store }
     var settings: AppSettings { manager.settings }
@@ -32,6 +35,11 @@ final class ShelfWindowController: NSObject, NSWindowDelegate, ShelfDropTarget, 
         panel.contentView = glass
         panel.delegate = self
         panel.onKeyDown = { [weak self] event in self?.handleKey(event) ?? false }
+        Self.alive += 1
+    }
+
+    deinit {
+        MainActor.assumeIsolated { Self.alive -= 1 }
     }
 
     var commands: ShelfCommands {
@@ -81,10 +89,15 @@ final class ShelfWindowController: NSObject, NSWindowDelegate, ShelfDropTarget, 
     }
 
     func windowDidMove(_ notification: Notification) {
-        if model.shelf.dock == nil {
-            store.setOrigin(shelfID, panel.frame.origin)
-        }
         layoutDetail()
+        guard model.shelf.dock == nil else { return }
+        // Mientras se arrastra la ventana llegan decenas de avisos por segundo: se guarda una vez al parar.
+        saveOriginTask?.cancel()
+        saveOriginTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard let self, !Task.isCancelled else { return }
+            self.store.setOrigin(self.shelfID, self.panel.frame.origin)
+        }
     }
 
     func windowDidBecomeKey(_ notification: Notification) {
@@ -126,13 +139,13 @@ final class ShelfWindowController: NSObject, NSWindowDelegate, ShelfDropTarget, 
 
     func dropExited() {
         model.isDropTarget = false
-        manager.quickActions.scheduleHide()
+        manager.hideQuickActions(soon: true)
         scheduleCollapse()
     }
 
     func performDrop(_ info: NSDraggingInfo) -> Bool {
         model.isDropTarget = false
-        manager.quickActions.hide()
+        manager.hideQuickActions(soon: false)
         guard !isOwnDrag(info) else { return false }
         manager.receive(info.draggingPasteboard, into: shelfID)
         return true

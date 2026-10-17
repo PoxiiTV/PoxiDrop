@@ -28,27 +28,31 @@ enum Snapshots {
 
         if let controller = manager.controller(for: id) {
             controller.model.isActive = true
-            capture(controller.panel.contentView, to: folder.appendingPathComponent("estanteria.png"))
+            capture(controller.panel.contentView, to: folder.appendingPathComponent("estanteria.png"), radius: ShelfGeometry.cornerRadius)
             controller.model.selection = Set(controller.model.shelf.items.prefix(2).map(\.id))
             controller.showDetail()
-            capture(controller.detailPanel?.contentView, to: folder.appendingPathComponent("detalle.png"))
+            capture(controller.detailPanel?.contentView, to: folder.appendingPathComponent("detalle.png"), radius: 16)
             settings.detailLayout = .list
             controller.layoutDetail()
-            capture(controller.detailPanel?.contentView, to: folder.appendingPathComponent("detalle-lista.png"))
+            capture(controller.detailPanel?.contentView, to: folder.appendingPathComponent("detalle-lista.png"), radius: 16)
             controller.hideDetail()
             controller.showPalette()
             if let palette = NSApp.windows.compactMap({ $0 as? ShelfPanel }).first(where: { $0.frame.width == 300 }) {
                 palette.setFrameOrigin(CGPoint(x: -8000, y: -6000))
-                capture(palette.contentView, to: folder.appendingPathComponent("buscador.png"))
+                capture(palette.contentView, to: folder.appendingPathComponent("buscador.png"), radius: 16)
             }
         }
         if let controller = manager.controller(for: empty) {
-            capture(controller.panel.contentView, to: folder.appendingPathComponent("estanteria-vacia.png"))
+            capture(controller.panel.contentView, to: folder.appendingPathComponent("estanteria-vacia.png"), radius: ShelfGeometry.cornerRadius)
         }
 
-        manager.quickActions.model.hovered = .airDrop
-        manager.quickActions.show(below: CGRect(x: -8000, y: -5000, width: 170, height: 170))
-        capture(manager.quickActions.contentView, to: folder.appendingPathComponent("acciones-directas.png"))
+        let quickModel = QuickActionsModel()
+        quickModel.hovered = .airDrop
+        let quickRenderer = ImageRenderer(content: QuickActionsView(model: quickModel))
+        quickRenderer.scale = 2
+        if let image = quickRenderer.nsImage {
+            compose(image, to: folder.appendingPathComponent("acciones-directas.png"), radius: nil)
+        }
 
         for section in SettingsSection.allCases {
             let view = NSHostingView(rootView: SettingsView(settings: settings, store: store, section: section))
@@ -57,7 +61,7 @@ enum Snapshots {
                                   styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
             window.contentView = view
             window.orderFrontRegardless()
-            capture(view, to: folder.appendingPathComponent("ajustes-\(section.id.lowercased()).png"), padding: 0)
+            capture(view, to: folder.appendingPathComponent("ajustes-\(section.id.lowercased()).png"), radius: 12, padding: 0)
             window.orderOut(nil)
         }
         print("Capturas en \(folder.path)")
@@ -90,25 +94,55 @@ enum Snapshots {
         return urls + [notes, project]
     }
 
-    /// Dibuja una vista sobre un fondo de escritorio de colores y la guarda como PNG.
-    static func capture(_ view: NSView?, to url: URL, padding: CGFloat = 40) {
+    /// Captura una vista y la guarda como PNG bonita (ver `compose`).
+    static func capture(_ view: NSView?, to url: URL, radius: CGFloat? = nil, padding: CGFloat = 40) {
         guard let view else { return }
-        RunLoop.main.run(until: Date().addingTimeInterval(0.8))
+        for _ in 0..<8 { autoreleasepool { RunLoop.main.run(until: Date().addingTimeInterval(0.1)) } }
         view.layoutSubtreeIfNeeded()
         guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return }
         view.cacheDisplay(in: view.bounds, to: rep)
-        let size = CGSize(width: view.bounds.width + padding * 2, height: view.bounds.height + padding * 2)
-        let image = NSImage(size: size, flipped: false) { rect in
-            if padding > 0 {
-                NSGradient(starting: NSColor(calibratedRed: 0.36, green: 0.30, blue: 0.85, alpha: 1),
-                           ending: NSColor(calibratedRed: 0.93, green: 0.45, blue: 0.62, alpha: 1))?.draw(in: rect, angle: -35)
-            }
-            rep.draw(in: CGRect(x: padding, y: padding, width: view.bounds.width, height: view.bounds.height))
-            return true
+        let image = NSImage(size: view.bounds.size)
+        image.addRepresentation(rep)
+        compose(image, to: url, radius: radius, padding: padding)
+    }
+
+    /// Pone la imagen sobre una tarjeta de colores con esquinas redondeadas (transparente por fuera),
+    /// recorta la propia imagen con su radio y le añade una sombra suave, como una ventana de verdad.
+    static func compose(_ content: NSImage, to url: URL, radius: CGFloat?, padding: CGFloat = 40) {
+        let inner = content.size
+        let size = CGSize(width: inner.width + padding * 2, height: inner.height + padding * 2)
+        let scale: CGFloat = 2
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width * scale), pixelsHigh: Int(size.height * scale),
+                                         bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return }
+        rep.size = size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        let canvas = CGRect(origin: .zero, size: size)
+        if padding > 0 {
+            let card = NSBezierPath(roundedRect: canvas, xRadius: 28, yRadius: 28)
+            NSGradient(starting: NSColor(calibratedRed: 0.36, green: 0.30, blue: 0.85, alpha: 1),
+                       ending: NSColor(calibratedRed: 0.93, green: 0.45, blue: 0.62, alpha: 1))?.draw(in: card, angle: -35)
         }
-        guard let tiff = image.tiffRepresentation,
-              let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else { return }
-        try? png.write(to: url)
+        let frame = CGRect(x: padding, y: padding, width: inner.width, height: inner.height)
+        let shape = radius.map { NSBezierPath(roundedRect: frame, xRadius: $0, yRadius: $0) }
+        if let shape, padding > 0 {
+            NSGraphicsContext.saveGraphicsState()
+            let shadow = NSShadow()
+            shadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
+            shadow.shadowBlurRadius = 18
+            shadow.shadowOffset = NSSize(width: 0, height: -6)
+            shadow.set()
+            NSColor.black.setFill()
+            shape.fill()
+            NSGraphicsContext.restoreGraphicsState()
+        }
+        NSGraphicsContext.saveGraphicsState()
+        shape?.addClip()
+        content.draw(in: frame)
+        NSGraphicsContext.restoreGraphicsState()
+        NSGraphicsContext.restoreGraphicsState()
+        try? rep.representation(using: .png, properties: [:])?.write(to: url)
     }
 }
 

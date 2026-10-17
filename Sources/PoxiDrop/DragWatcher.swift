@@ -36,9 +36,17 @@ final class DragWatcher {
         detector = ShakeDetector(settings: .sensitivity(settings.shakeSensitivity))
         dragging = false
         triggered = false
-        let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
+        // Hasta que empieza un arrastre con contenido basta con mirar 20 veces por segundo;
+        // durante el arrastre se sube a 60 para detectar bien el agitado.
+        schedule(every: 1.0 / 20)
+    }
+
+    private func schedule(every interval: TimeInterval) {
+        timer?.invalidate()
+        let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
+        timer.tolerance = interval / 4
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }
@@ -51,6 +59,7 @@ final class DragWatcher {
         if !dragging {
             guard NSPasteboard(name: .drag).changeCount != baselineChangeCount else { return }
             dragging = true
+            schedule(every: 1.0 / 60)
         }
         guard !triggered else { return }
 

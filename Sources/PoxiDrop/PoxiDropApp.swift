@@ -9,6 +9,10 @@ enum PoxiDropMain {
             MainActor.assumeIsolated { Snapshots.render(to: URL(fileURLWithPath: arguments[index + 1])) }
             exit(0)
         }
+        if arguments.contains("--medir") {
+            MainActor.assumeIsolated { Benchmark.run() }
+            exit(0)
+        }
         MainActor.assumeIsolated {
             let app = NSApplication.shared
             let delegate = AppDelegate()

@@ -8,11 +8,19 @@ final class ShelfManager {
     let store: ShelfStore
     let settings: AppSettings
     let openSettings: () -> Void
-    let quickActions = QuickActionsController()
+    /// Las acciones directas se crean la primera vez que hacen falta.
+    private var quickActionsController: QuickActionsController?
+    var quickActions: QuickActionsController {
+        if let quickActionsController { return quickActionsController }
+        let created = QuickActionsController()
+        quickActionsController = created
+        return created
+    }
 
     private var controllers: [Shelf.ID: ShelfWindowController] = [:]
     private var subscriptions = Set<AnyCancellable>()
     private var dragShelf: Shelf.ID?
+    private var pruneTask: Task<Void, Never>?
     private(set) var activeShelf: Shelf.ID? {
         didSet { updateActive() }
     }
@@ -53,6 +61,24 @@ final class ShelfManager {
             controller.refresh()
         }
         updateActive()
+        schedulePrune()
+    }
+
+    /// Olvida miniaturas y tamaños de archivos que ya no están en ninguna estantería.
+    /// Se espera un segundo para que las ventanas recién cerradas no vuelvan a pedirlos.
+    private func schedulePrune() {
+        pruneTask?.cancel()
+        pruneTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard let self, !Task.isCancelled else { return }
+            let inUse = Set(self.store.shelves.flatMap { $0.items.map(\.url) })
+            Thumbnails.shared.keep(only: inUse)
+            SizeCache.shared.keep(only: inUse)
+        }
+    }
+
+    func hideQuickActions(soon: Bool) {
+        if soon { quickActionsController?.scheduleHide() } else { quickActionsController?.hide() }
     }
 
     private var defaultPoint: CGPoint {
@@ -132,7 +158,7 @@ final class ShelfManager {
 
     /// Al terminar el arrastre: fuera las acciones directas, y si la estantería que se abrió se quedó vacía, se cierra.
     func dragSessionEnded() {
-        quickActions.scheduleHide()
+        hideQuickActions(soon: true)
         guard let id = dragShelf else { return }
         dragShelf = nil
         Task { @MainActor [weak self] in

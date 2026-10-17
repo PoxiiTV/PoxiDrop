@@ -104,7 +104,12 @@ struct Banner: View {
                     LinearGradient(colors: [Color(hex: 0x5C4DD9), Color(hex: 0xED739E)], startPoint: .topLeading, endPoint: .bottomTrailing)
                     VStack(spacing: 0) {
                         Image(nsImage: shelf).resizable().aspectRatio(contentMode: .fit).frame(height: 190)
-                        Image(nsImage: detail).resizable().aspectRatio(contentMode: .fit).frame(height: 300).padding(.top, 14)
+                            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                            .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
+                        Image(nsImage: detail).resizable().aspectRatio(contentMode: .fit).frame(height: 300)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: .black.opacity(0.35), radius: 14, y: 6)
+                            .padding(.top, 14)
                     }
                     .padding(.top, 36)
                 }
