@@ -17,8 +17,11 @@ public enum FileSizes {
         urls.reduce(0) { $0 + size(of: $1) }
     }
 
-    /// «3,1 MB», en el idioma del sistema.
+    /// «3,1 MB», en el idioma del sistema. Siempre con número («0 KB», nunca «Zero KB»).
     public static func format(_ bytes: Int64) -> String {
-        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        formatter.allowsNonnumericFormatting = false
+        return formatter.string(fromByteCount: bytes)
     }
 }

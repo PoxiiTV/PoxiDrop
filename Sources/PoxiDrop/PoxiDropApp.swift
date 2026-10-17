@@ -1,6 +1,20 @@
+import AppKit
+import Foundation
+
 @main
 enum PoxiDropMain {
     static func main() {
-        print("PoxiDrop: la app completa llega en la tarea 13.")
+        let arguments = CommandLine.arguments
+        if let index = arguments.firstIndex(of: "--snapshot"), arguments.count > index + 1 {
+            MainActor.assumeIsolated { Snapshots.render(to: URL(fileURLWithPath: arguments[index + 1])) }
+            exit(0)
+        }
+        MainActor.assumeIsolated {
+            let app = NSApplication.shared
+            let delegate = AppDelegate()
+            app.delegate = delegate
+            app.setActivationPolicy(.accessory)
+            withExtendedLifetime(delegate) { app.run() }
+        }
     }
 }

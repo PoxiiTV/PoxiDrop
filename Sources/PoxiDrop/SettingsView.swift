@@ -99,7 +99,7 @@ struct SettingsView: View {
         } header: {
             Text("Agitar")
         } footer: {
-            Text("Arrastra algo y muévelo rápido de lado a lado: aparece una estantería para soltarlo.")
+            SettingsFooter("Arrastra algo y muévelo rápido de lado a lado: aparece una estantería para soltarlo.")
         }
         Section("Tecla") {
             Toggle("Abrir al mantener una tecla mientras arrastras", isOn: $settings.modifierEnabled)
@@ -114,12 +114,12 @@ struct SettingsView: View {
         } header: {
             Text("Muesca")
         } footer: {
-            Text(NotchZone.hasNotch ? "Solo en pantallas con muesca, como la de tu MacBook." : "Esta pantalla no tiene muesca.")
+            SettingsFooter(NotchZone.hasNotch ? "Solo en pantallas con muesca, como la de tu MacBook." : "Esta pantalla no tiene muesca.")
         }
         Section {
             Toggle("Acciones directas al arrastrar sobre una estantería", isOn: $settings.quickActionsEnabled)
         } footer: {
-            Text("Salen casillas de AirDrop, Mensajes, Mail y ZIP: suelta encima para hacerlo al momento.")
+            SettingsFooter("Salen casillas de AirDrop, Mensajes, Mail y ZIP: suelta encima para hacerlo al momento.")
         }
     }
 
@@ -164,7 +164,7 @@ struct SettingsView: View {
         } header: {
             Text("Mis acciones")
         } footer: {
-            Text("Cada script recibe las rutas de los archivos como argumentos. Lo que guarde en la carpeta $POXIDROP_OUTPUT aparece en la estantería.")
+            SettingsFooter("Cada script recibe las rutas de los archivos como argumentos. Lo que guarde en la carpeta $POXIDROP_OUTPUT aparece en la estantería.")
         }
     }
 
@@ -175,7 +175,7 @@ struct SettingsView: View {
             LabeledContent("Nueva estantería con el portapapeles", value: "⌃⌥V")
             LabeledContent("Mostrar u ocultar estanterías", value: "⌃⌥S")
         } footer: {
-            Text("Funcionan desde cualquier app.")
+            SettingsFooter("Funcionan desde cualquier app.")
         }
         Section("Dentro de una estantería") {
             LabeledContent("Vista rápida", value: "Espacio")
@@ -190,9 +190,9 @@ struct SettingsView: View {
             Toggle("Icono en la barra de menús", isOn: $settings.showMenuBarIcon)
         } footer: {
             if let loginError = state.loginError {
-                Text(loginError).foregroundStyle(.red)
+                SettingsFooter(loginError, color: .red)
             } else {
-                Text("Si quitas el icono, abre PoxiDrop otra vez desde Aplicaciones para volver a los ajustes.")
+                SettingsFooter("Si quitas el icono, abre PoxiDrop otra vez desde Aplicaciones para volver a los ajustes.")
             }
         }
         Section("Estanterías") {
@@ -249,6 +249,24 @@ struct SettingsView: View {
         NSApp.activate()
         guard panel.runModal() == .OK, let url = panel.url else { return }
         settings.customScripts.append(CustomScript(name: url.deletingPathExtension().lastPathComponent, path: url.path))
+    }
+}
+
+/// Texto bajo una sección, alineado a la izquierda como en los Ajustes del Sistema.
+struct SettingsFooter: View {
+    let text: String
+    var color: Color = .secondary
+
+    init(_ text: String, color: Color = .secondary) {
+        self.text = text
+        self.color = color
+    }
+
+    var body: some View {
+        Text(text)
+            .foregroundStyle(color)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
